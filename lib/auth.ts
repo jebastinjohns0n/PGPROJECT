@@ -14,97 +14,89 @@ type User = {
   password?: string
 }
 
-const users: User[] = [
-  {
-    id: "1",
-    email: "superadmin@example.com",
-    role: "superAdmin",
-    name: "Super Admin",
-    department: "Management",
-    joinDate: "2020-01-01",
-    phone: "+1234567890",
-    address: "123 Admin Street",
-    completedBatches: 0,
-    studentsCompleted: 0,
-    completionRate: 0,
-    employeeId: "EMP000",
-  },
-  {
-    id: "2",
-    email: "admin@example.com",
-    role: "admin",
-    name: "Admin User",
-    department: "Operations",
-    joinDate: "2021-03-15",
-    phone: "+1987654321",
-    address: "456 Admin Avenue",
-    completedBatches: 0,
-    studentsCompleted: 0,
-    completionRate: 0,
-    employeeId: "EMP001",
-  },
-  {
-    id: "3",
-    email: "lecturer@example.com",
-    role: "lecturer",
-    name: "Lecturer User",
-    department: "Training",
-    joinDate: "2022-06-10",
-    phone: "+1122334455",
-    address: "789 Lecturer Lane",
-    completedBatches: 5,
-    studentsCompleted: 75,
-    completionRate: 92,
-    employeeId: "EMP002",
-  },
-]
+import axiosInstance from "@/utils/axiosInstance";
 
-// This function will be used to add new users created by admin
-export const addUser = (user: User): User => {
-  // Generate a new ID
-  const newId = (users.length + 1).toString()
-
-  // Generate a unique employee ID if not provided
-  const employeeId = user.employeeId || `EMP${(users.length + 1).toString().padStart(3, "0")}`
-
-  const newUser = { ...user, id: newId, employeeId }
-  users.push(newUser)
-  return newUser
+export type AuthResult = {
+  user: User | null;
+  error?: string;
 }
 
-export const authenticate = (email: string, password: string): User | null => {
-  // In a real application, you would hash the password and compare it securely
-  const user = users.find((u) => u.email === email)
-
-  // Check if user exists and password matches
-  // For existing demo users, allow "password" as default
-  // For new users, check against their specific password
-  if (user) {
-    if (password === "password" || password === user.password) {
-      return user
-    }
+export const addUser = async (user: User): Promise<User> => {
+  try {
+    const response = await axiosInstance.post('/users', user);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding user:', error);
+    throw error;
   }
-  return null
+}
+
+export const authenticate = async (email: string, password: string): Promise<AuthResult> => {
+  try {
+    const response = await axiosInstance.post('/users/login', { email, password });
+    const { token, user } = response.data;
+    if (!token || !user) {
+      return { user: null, error: 'Invalid response from server' };
+    }
+    localStorage.setItem('token', token);
+    setCurrentUser(user);
+    return { user };
+  } catch (error: any) {
+    console.error('Authentication error:', error);
+    if (error.response) {
+      const { status, data } = error.response;
+      switch (status) {
+        case 404:
+          return { user: null, error: data?.message || 'No user found with this email' };
+        case 401:
+          return { user: null, error: data?.message || 'Invalid credentials' };
+        case 403:
+          return { user: null, error: data?.message || 'Access forbidden' };
+        case 429:
+          return { user: null, error: 'Too many login attempts. Please try again later' };
+        case 500:
+          return { user: null, error: 'Server error. Please try again later' };
+        default:
+          return { user: null, error: data?.message || 'Authentication failed' };
+      }
+    }
+    if (!navigator.onLine) {
+      return { user: null, error: 'No internet connection' };
+    }
+    return { user: null, error: 'Unable to connect to server. Please try again' };
+  }
 }
 
 export const getCurrentUser = (): User | null => {
-  const userJson = localStorage.getItem("currentUser")
-  return userJson ? JSON.parse(userJson) : null
+  const userJson = localStorage.getItem("currentUser");
+  return userJson ? JSON.parse(userJson) : null;
 }
 
 export const setCurrentUser = (user: User | null) => {
   if (user) {
-    localStorage.setItem("currentUser", JSON.stringify(user))
+    localStorage.setItem("currentUser", JSON.stringify(user));
   } else {
-    localStorage.removeItem("currentUser")
+    localStorage.removeItem("currentUser");
   }
 }
 
-export const getAllUsers = (): User[] => {
-  return users
+export const getAllUsers = async (): Promise<User[]> => {
+  try {
+    const response = await axiosInstance.get('/users');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
 }
 
-export const getUserById = (id: string): User | undefined => {
-  return users.find((user) => user.id === id)
+export const getUserById = async (id: string): Promise<User | null> => {
+  try {
+    const response = await axiosInstance.get(`/users/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching user ${id}:`, error);
+    return null;
+  }
 }
 

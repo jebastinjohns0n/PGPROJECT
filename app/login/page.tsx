@@ -10,12 +10,14 @@ import { useToast } from "@/hooks/use-toast"
 import { authenticate, setCurrentUser } from "@/lib/auth"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Lock, Mail } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function Login() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
   const { toast } = useToast()
 
@@ -23,21 +25,24 @@ export default function Login() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate network delay
-    setTimeout(() => {
-      const user = authenticate(email, password)
-      if (user) {
-        setCurrentUser(user)
+    try {
+      setError("") // Clear previous errors
+      const result = await authenticate(email, password)
+      if (result.user) {
+        setCurrentUser(result.user)
+        toast({
+          title: "Success",
+          description: "Login successful! Welcome back.",
+        })
         router.push("/")
       } else {
-        toast({
-          title: "Error",
-          description: "Invalid email or password",
-          variant: "destructive",
-        })
+        setError(result.error || "Invalid email or password")
       }
+    } catch (error) {
+      setError("Unable to connect to server. Please try again later.")
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -61,7 +66,18 @@ export default function Login() {
               <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
                 Sign in to access your dashboard
               </p>
+              <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+                Don't have an account?{" "}
+                <a href="/register" className="text-blue-500 hover:text-blue-600">
+                  Register here
+                </a>
+              </p>
             </div>
+            {error && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
             <form className="space-y-6" onSubmit={handleLogin}>
               <div className="space-y-4">
                 <div>
