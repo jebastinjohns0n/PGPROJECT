@@ -375,11 +375,11 @@ src/main/java/com/cybernaut/atms/
 ```env
 # Backend Configuration
 SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/atms
-SERVER_PORT=8080
+SERVER_PORT=8090
 JWT_SECRET=your-secret-key
 
 # Frontend Configuration
-NEXT_PUBLIC_API_URL=http://localhost:8080/api
+NEXT_PUBLIC_API_URL=http://localhost:8090/api
 ```
 
 ## API Endpoints
