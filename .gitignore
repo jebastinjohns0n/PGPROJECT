@@ -37,6 +37,8 @@ jspm_packages
 .node_repl_history
 .next
 
+# jwt token
+.env
 
 # spring & Maven
 
