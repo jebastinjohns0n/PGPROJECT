@@ -28,7 +28,9 @@ export default function Login() {
     try {
       setError("") // Clear previous errors
       const result = await authenticate(email, password)
-      if (result.user) {
+      if (result.error === 'otp_required') {
+        router.push(`/otp?email=${encodeURIComponent(email)}`)
+      } else if (result.user) {
         setCurrentUser(result.user)
         toast({
           title: "Success",

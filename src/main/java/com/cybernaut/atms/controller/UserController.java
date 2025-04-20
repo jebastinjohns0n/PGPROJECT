@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +46,34 @@ public class UserController {
     }
     
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
+    public ResponseEntity<?> registerUser(@RequestBody User user) {
+        try {
+            // Validate required fields
+            if (user.getEmail() == null || user.getEmail().isEmpty()) {
+                return ResponseEntity.badRequest().body("Email is required");
+            }
+            if (user.getPassword() == null || user.getPassword().isEmpty()) {
+                return ResponseEntity.badRequest().body("Password is required");
+            }
+            if (user.getName() == null || user.getName().isEmpty()) {
+                return ResponseEntity.badRequest().body("Name is required");
+            }
+            
+            // Set default role for new users
+            user.setRole(User.Role.LECTURER);
+            // Set account status
+            user.setStatus("ACTIVE");
+            // Set join date
+            user.setJoinDate(LocalDate.now());
+            // Set default values for optional fields
+            if (user.getPhone() == null) user.setPhone("");
+            if (user.getDepartment() == null) user.setDepartment("");
+            
+            User savedUser = userService.createUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
    @PutMapping("/{id}")

@@ -34,6 +34,12 @@ export const addUser = async (user: User): Promise<User> => {
 export const authenticate = async (email: string, password: string): Promise<AuthResult> => {
   try {
     const response = await axiosInstance.post('/users/login', { email, password });
+    
+    // Check if response contains OTP message
+    if (response.data.message && response.data.message.includes('OTP sent')) {
+      return { user: null, error: 'otp_required' };
+    }
+    
     const { token, user } = response.data;
     if (!token || !user) {
       return { user: null, error: 'Invalid response from server' };
@@ -97,6 +103,36 @@ export const getUserById = async (id: string): Promise<User | null> => {
   } catch (error) {
     console.error(`Error fetching user ${id}:`, error);
     return null;
+  }
+}
+
+export const verifyOtp = async (email: string, otp: string): Promise<AuthResult> => {
+  try {
+    const response = await axiosInstance.post('/users/verify-otp', { email, otp });
+    const { token, user } = response.data;
+    
+    if (!token || !user) {
+      return { user: null, error: 'Invalid OTP code' };
+    }
+    
+    localStorage.setItem('token', `Bearer ${token}`);
+    return { user };
+  } catch (error: any) {
+    console.error('OTP verification error:', error);
+    if (error.response) {
+      const { status, data } = error.response;
+      switch (status) {
+        case 400:
+          return { user: null, error: data?.message || 'Invalid OTP code' };
+        case 404:
+          return { user: null, error: data?.message || 'No user found with this email' };
+        case 429:
+          return { user: null, error: 'Too many attempts. Please try again later' };
+        default:
+          return { user: null, error: data?.message || 'OTP verification failed' };
+      }
+    }
+    return { user: null, error: 'Unable to connect to server. Please try again' };
   }
 }
 
