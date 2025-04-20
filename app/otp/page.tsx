@@ -99,7 +99,7 @@ export default function OtpPage() {
                 </div>
               </div>
 
-              <div>
+              <div className="flex flex-col space-y-4">
                 <Button
                   type="submit"
                   disabled={isLoading}
@@ -107,6 +107,22 @@ export default function OtpPage() {
                 >
                   {isLoading ? "Verifying..." : "Verify OTP"}
                 </Button>
+                <div className="flex justify-between text-sm">
+                  <button 
+                    type="button" 
+                    onClick={() => router.push('/login')}
+                    className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Back to Sign In
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => router.push('/register')}
+                    className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Create New Account
+                  </button>
+                </div>
               </div>
             </form>
           </div>
