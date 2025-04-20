@@ -2,6 +2,8 @@ package com.cybernaut.atms.service;
 
 import com.cybernaut.atms.model.User;
 import com.cybernaut.atms.repository.UserRepository;
+import com.cybernaut.atms.service.otp.OtpService;
+import com.cybernaut.atms.service.notification.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -108,7 +110,7 @@ public class UserService {
        return false;
    }
 
-   private void increaseFailedAttempts(User user) {
+   public void increaseFailedAttempts(User user) {
        int newFailAttempts = user.getFailedAttempt() + 1;
        user.setFailedAttempt(newFailAttempts);
        if (newFailAttempts >= MAX_FAILED_ATTEMPTS) {

@@ -23,7 +23,7 @@ export type AuthResult = {
 
 export const addUser = async (user: User): Promise<User> => {
   try {
-    const response = await axiosInstance.post('/users', user);
+    const response = await axiosInstance.post('/users/register', user);
     return response.data;
   } catch (error) {
     console.error('Error adding user:', error);
@@ -38,7 +38,7 @@ export const authenticate = async (email: string, password: string): Promise<Aut
     if (!token || !user) {
       return { user: null, error: 'Invalid response from server' };
     }
-    localStorage.setItem('token', token);
+    localStorage.setItem('token', `Bearer ${token}`);
     setCurrentUser(user);
     return { user };
   } catch (error: any) {

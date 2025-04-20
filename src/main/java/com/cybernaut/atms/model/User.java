@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -27,6 +28,9 @@ public class User {
     private int studentsCompleted;
     private double completionRate;
     private String status;
+    private boolean accountLocked;
+    private int failedAttempt;
+    private Date lockTime;
 
     public enum Role {
         SUPER_ADMIN, ADMIN, LECTURER
@@ -98,6 +102,30 @@ public class User {
 
 	public String getAddress() {
 		return address;
+	}
+
+	public boolean isAccountLocked() {
+		return accountLocked;
+	}
+
+	public void setAccountLocked(boolean accountLocked) {
+		this.accountLocked = accountLocked;
+	}
+
+	public int getFailedAttempt() {
+		return failedAttempt;
+	}
+
+	public void setFailedAttempt(int failedAttempt) {
+		this.failedAttempt = failedAttempt;
+	}
+
+	public Date getLockTime() {
+		return lockTime;
+	}
+
+	public void setLockTime(Date lockTime) {
+		this.lockTime = lockTime;
 	}
 
 	public void setAddress(String address) {
